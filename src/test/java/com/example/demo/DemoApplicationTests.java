@@ -1,9 +1,6 @@
 package com.example.demo;
 
-import com.example.demo.dto.LoginErrorDto;
-import com.example.demo.dto.NewUserRequestDto;
-import com.example.demo.dto.NewUserResponseDto;
-import com.example.demo.dto.UserDto;
+import com.example.demo.dto.*;
 import com.example.demo.entity.UsersDto;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.mockwebserver.MockWebServer;
@@ -152,7 +149,33 @@ class DemoApplicationTests {
                 });
     }
 
-    
+    @Test
+    void updatingTest(){
+        UpdateUserRequestDto updateUserRequestDto = UpdateUserRequestDto.builder().job("Manager").name("Alex").build();
+        webClient.put().uri(singleUserBaseUrl)
+                .accept(MediaType.APPLICATION_JSON)
+                .body(Mono.just(updateUserRequestDto), UpdateUserRequestDto.class)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(UpdateUserResponseDto.class)
+                .consumeWith(result -> {
+                    UpdateUserResponseDto updateUserResponseDto = result.getResponseBody();
+                    assert updateUserResponseDto != null;
+                    assertThat(updateUserResponseDto.getJob()).isEqualTo(updateUserResponseDto.getJob());
+                    assertThat(updateUserResponseDto.getName()).isEqualTo(updateUserResponseDto.getName());
+                    assertThat(updateUserResponseDto.getUpdatedAt()).isNotEmpty();
+                    log.info(updateUserResponseDto + " - new user response");
+                });
+    }
+
+    @Test
+    void deletionTest(){
+        webClient.delete().uri(singleUserBaseUrl)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isNoContent();
+    }
+
 
 
 }
