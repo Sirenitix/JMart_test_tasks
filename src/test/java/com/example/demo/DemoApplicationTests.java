@@ -164,7 +164,7 @@ class DemoApplicationTests {
                     assertThat(updateUserResponseDto.getJob()).isEqualTo(updateUserResponseDto.getJob());
                     assertThat(updateUserResponseDto.getName()).isEqualTo(updateUserResponseDto.getName());
                     assertThat(updateUserResponseDto.getUpdatedAt()).isNotEmpty();
-                    log.info(updateUserResponseDto + " - new user response");
+                    log.info(updateUserResponseDto + " - updated user response");
                 });
     }
 
@@ -174,6 +174,25 @@ class DemoApplicationTests {
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isNoContent();
+    }
+
+    @Test
+    void patchingTest(){
+        UpdateUserRequestDto updateUserRequestDto = UpdateUserRequestDto.builder().job("Manager").name("Alex").build();
+        webClient.patch().uri(singleUserBaseUrl)
+                .accept(MediaType.APPLICATION_JSON)
+                .body(Mono.just(updateUserRequestDto), UpdateUserRequestDto.class)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(UpdateUserResponseDto.class)
+                .consumeWith(result -> {
+                    UpdateUserResponseDto updateUserResponseDto = result.getResponseBody();
+                    assert updateUserResponseDto != null;
+                    assertThat(updateUserResponseDto.getJob()).isEqualTo(updateUserResponseDto.getJob());
+                    assertThat(updateUserResponseDto.getName()).isEqualTo(updateUserResponseDto.getName());
+                    assertThat(updateUserResponseDto.getUpdatedAt()).isNotEmpty();
+                    log.info(updateUserResponseDto + " - patch user response");
+                });
     }
 
 
