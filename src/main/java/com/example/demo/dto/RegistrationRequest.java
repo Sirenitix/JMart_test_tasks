@@ -9,9 +9,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class NewUserRequestDto {
-
-    String name;
-    String job;
+public class RegistrationRequest {
+    String email;
+    String password;
+    String username;
 
 }

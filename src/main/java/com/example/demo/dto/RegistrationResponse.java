@@ -9,9 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class NewUserRequestDto {
-
-    String name;
-    String job;
-
+public class RegistrationResponse {
+    Long id;
+    String token;
 }
