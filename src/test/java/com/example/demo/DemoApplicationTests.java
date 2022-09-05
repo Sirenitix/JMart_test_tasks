@@ -114,6 +114,7 @@ class DemoApplicationTests {
         assertThat(usersDto.getTotal()).isNotNull();
         assertThat(usersDto.getTotal_pages()).isNotNull();
         assertThat(usersDto.getData().size()).isGreaterThan(0);
+        // checking ordering
         assertThat(Ordering.natural().isOrdered(usersDto)).isTrue();
 
         // get list of users with invalid offset number
