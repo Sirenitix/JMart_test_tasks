@@ -3,6 +3,7 @@ package com.example.demo;
 import com.example.demo.dto.*;
 import com.example.demo.entity.*;
 import com.example.demo.entity.ResourceDto;
+import com.google.common.collect.Ordering;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.BeforeAll;
@@ -113,6 +114,7 @@ class DemoApplicationTests {
         assertThat(usersDto.getTotal()).isNotNull();
         assertThat(usersDto.getTotal_pages()).isNotNull();
         assertThat(usersDto.getData().size()).isGreaterThan(0);
+        assertThat(Ordering.natural().isOrdered(usersDto)).isTrue();
 
         // get list of users with invalid offset number
         webClient.get().uri(reqresProperties.getUsersApiWithOffset() + invalidPage)

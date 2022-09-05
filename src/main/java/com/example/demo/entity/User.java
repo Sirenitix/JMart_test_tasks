@@ -4,7 +4,7 @@ package com.example.demo.entity;
 import lombok.Data;
 
 @Data
-public class User {
+public class User implements Comparable<User> {
 
     Long id;
     String email;
@@ -12,5 +12,10 @@ public class User {
     String last_name;
     String avatar;
 
+    @Override
+    public int compareTo(User o)
+    {
+        return this.getId().compareTo( o.getId() );
+    }
 
 }
