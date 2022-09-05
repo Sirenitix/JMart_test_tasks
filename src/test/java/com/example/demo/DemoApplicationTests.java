@@ -1,17 +1,14 @@
 package com.example.demo;
 
 import com.example.demo.dto.*;
-import com.example.demo.entity.Url;
-import com.example.demo.entity.UsersDto;
-import lombok.RequiredArgsConstructor;
+import com.example.demo.entity.*;
+import com.example.demo.entity.ResourceDto;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -165,12 +162,132 @@ class DemoApplicationTests {
         assertThat(usersDto.getTotal()).isNotNull();
         assertThat(usersDto.getTotal_pages()).isNotNull();
         assertThat(usersDto.getPer_page()).isEqualTo(perPageNumber);
-        assertThat(usersDto.getData().size()).isGreaterThan(0);
+        assertThat(usersDto.getData().size()).isEqualTo(perPageNumber);
+
+
+    }
+
+
+    @Test
+    void isResourceExist() {
+
+        ResourceDto resourceDto = new ResourceDto();
+        int realId = 2;
+        double invalidId = -10000.0;
+        int incorrectId = 100000;
+
+        // get existed user
+        webClient.get().uri(reqresProperties.getUsersApi() + realId)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectBody(ResourceDto.class)
+                .consumeWith(response -> {
+                    resourceDto.setData(Objects.requireNonNull(response.getResponseBody()).getData());
+                    resourceDto.setSupport(response.getResponseBody().getSupport());
+                });
+        log.info(resourceDto + " - resource information");
+        assertThat(resourceDto.getData()).isNotNull();
+        assertThat(resourceDto.getSupport()).isNotNull();
+
+        // get user by invalid id
+        webClient.get().uri(reqresProperties.getUsersApi() + invalidId)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isBadRequest();
+
+
+        // get user that not exist
+        webClient.get().uri(reqresProperties.getUsersApi() + incorrectId)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isNotFound();
 
     }
 
 
 
+
+    @Test
+    void isListOfResourceTests() {
+
+        ResourcesDto resourceDto = new ResourcesDto();
+        int pageNumber = 2;
+        int perPageNumber = 5;
+        double invalidPage = -100000.0;
+        String incorrectData = "@#$!&*)+";
+
+        // get list of users with valid offset number
+        webClient.get().uri(reqresProperties.getUsersApiWithOffset() + pageNumber)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectBody(ResourcesDto.class)
+                .consumeWith(response -> {
+                    resourceDto.setData(Objects.requireNonNull(response.getResponseBody()).getData());
+                    resourceDto.setPage(response.getResponseBody().getPage());
+                    resourceDto.setPer_page(response.getResponseBody().getPer_page());
+                    resourceDto.setTotal(response.getResponseBody().getTotal());
+                    resourceDto.setTotal_pages(response.getResponseBody().getTotal_pages());
+
+                });
+        log.info(resourceDto + " - resource information");
+        assertThat(resourceDto.getData()).isNotNull();
+        assertThat(resourceDto.getPage()).isEqualTo(pageNumber);
+        assertThat(resourceDto.getPer_page()).isNotNull();
+        assertThat(resourceDto.getTotal()).isNotNull();
+        assertThat(resourceDto.getTotal_pages()).isNotNull();
+        assertThat(resourceDto.getData().size()).isGreaterThan(0);
+
+        // get list of users with invalid offset number
+        webClient.get().uri(reqresProperties.getUsersApiWithOffset() + invalidPage)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectBody(ResourcesDto.class)
+                .consumeWith(response -> {
+                    assertThat(Objects.requireNonNull(response.getResponseBody()).getData().size()).isEqualTo(0);
+                });
+
+        // offset with negative number should return 1 page
+        webClient.get().uri(reqresProperties.getUsersApiWithOffset() + invalidPage)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectBody(ResourcesDto.class)
+                .consumeWith(response -> {
+                    assertThat(Objects.requireNonNull(response.getResponseBody()).getPage()).isEqualTo(1);
+                });
+
+        // request with incorrect data should return response with 400 status and
+        webClient.get().uri(reqresProperties.getUsersApiWithOffset() + incorrectData)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody(String.class)
+                .consumeWith(response -> {
+                    assertThat(Objects.requireNonNull(response.getResponseBody())).isNotEmpty();
+                });
+
+        // request with offset and limit
+        webClient.get().uri(reqresProperties.getUsersApiWithOffsetAndLimit(), pageNumber,  perPageNumber )
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectBody(ResourcesDto.class)
+                .consumeWith(response -> {
+                    resourceDto.setData(Objects.requireNonNull(response.getResponseBody()).getData());
+                    resourceDto.setPage(response.getResponseBody().getPage());
+                    resourceDto.setPer_page(response.getResponseBody().getPer_page());
+                    resourceDto.setTotal(response.getResponseBody().getTotal());
+                    resourceDto.setTotal_pages(response.getResponseBody().getTotal_pages());
+
+                });
+        log.info(resourceDto + " - resource information");
+        assertThat(resourceDto.getData()).isNotNull();
+        assertThat(resourceDto.getPage()).isEqualTo(pageNumber);
+        assertThat(resourceDto.getPer_page()).isNotNull();
+        assertThat(resourceDto.getTotal()).isNotNull();
+        assertThat(resourceDto.getTotal_pages()).isNotNull();
+        assertThat(resourceDto.getPer_page()).isEqualTo(perPageNumber);
+        assertThat(resourceDto.getData().size()).isGreaterThan(0);
+
+    }
 
 
     @Test
